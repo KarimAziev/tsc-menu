@@ -864,9 +864,7 @@ Argument ARGS is a list of arguments to be formatted."
      (propertize args
                  'face 'success))))
 
-(transient-define-suffix tsc-menu-info ()
-  :info "Hello"
-  :class 'transient-information)
+
 
 ;;;###autoload (autoload 'tsc-menu "tsc-menu" nil t)
 (transient-define-prefix tsc-menu ()
@@ -877,8 +875,7 @@ Argument ARGS is a list of arguments to be formatted."
        (apply-partially #'transient-parse-suffix
                         transient--prefix)
        (append (list '("--" "Files" tsc-menu--files))
-               (nth 0 tsc-menu--children)
-               (list :info "Info"))))]
+               (nth 0 tsc-menu--children))))]
    [:setup-children
     (lambda (&rest _argsn)
       (mapcar

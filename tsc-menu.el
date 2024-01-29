@@ -1,4 +1,4 @@
-;;; tsc-menu.el --- Configure tsc menu -*- lexical-binding: t; -*-
+;;; tsc-menu.el --- Transient- interface for TypeScript compiler -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 Karim Aziiev <karim.aziiev@gmail.com>
 
@@ -26,122 +26,13 @@
 
 ;;; Commentary:
 
-;; Configure tsc menu
+;; Transient-based interface for configuring TypeScript compiler (tsc) options
+;; and running the resulting command.
 
 ;;; Code:
 
 (require 'transient)
 
-(defcustom tsc-menu-arguments-props nil
-  "Tsc-Menu."
-  :group 'tsc-menu
-  :type '(alist
-          :key-type
-          (string :tag "Argument")
-          :value-type
-          (plist
-           :options
-           (((const
-              :format "%v "
-              :doc "Custom key (should be prefixed with -)"
-              :key)
-             (string
-              :tag "Column Name"
-              "-"))
-            ((const :description)
-             (radio
-              :value 10
-              (string :tag
-               "Description")
-              (function :tag
-               "Unary function that return string")))
-            ((const
-              :format "%t%n%h"
-              :doc "The minimum width (overrides ‘width’ if ‘width’ is smaller than this).
-             ‘min-width’/‘max-width’ can be useful if ‘width’ is
-             given as a percentage of the window width, and you want to
-             ensure that the column doesn’t grow pointlessly large or
-             unreadably narrow."
-              :min-width)
-             (radio
-              :value "10%"
-              (natnum :tag
-               "The width of that many ‘x’ characters"
-               10)
-              (string :tag
-               "‘Xpx’ denoting a number of pixels"
-               "50px")
-              (string :tag
-               "‘X%’ a percentage of the window’s width"
-               "5%")))
-            ((const
-              :format "%t%n%h"
-              :doc "The maximum width (overrides ‘width’ if ‘width’ is greater than this).
-             ‘min-width’/‘max-width’ can be useful if ‘width’ is
-             given as a percentage of the window width, and you want to
-             ensure that the column doesn’t grow pointlessly large or
-             unreadably narrow."
-              :max-width)
-             (radio
-              :value "10%"
-              (natnum :tag
-               "The width of that many ‘x’ characters"
-               20)
-              (string :tag
-               "‘X%’ a percentage of the window’s width"
-               "30%")
-              (string :tag
-               "‘Xpx’ denoting a number of pixels"
-               "200px")))
-            ((const
-              :doc
-              "Whether this is the primary column—this will be used for initial sorting"
-              :primary)
-             (radio
-              :value ascend
-              (const ascend)
-              (const descend)))
-            ((const
-              :tag "Custom getter (object table)"
-              :format "%t%n%h"
-              :doc
-              "Function that called with two parameters: `object' and `table'."
-              :getter)
-             (function))
-            ((const
-              :tag "Custom formatter"
-              :format "%t%n%h"
-              :doc
-              "Function that called with one parameter: the column value."
-              :formatter)
-             (function :tag "Function (VALUE)"))
-            ((const
-              :tag
-              "Custom function displayer to prepare the formatted value for display"
-              :doc
-              "This function (FVALUE MAX-WIDTH TABLE) should return a truncated string to display.
-FVALUE is the formatted value
-MAX-WIDTH is the maximum width (in pixels),
-TABLE is the table."
-              :format "%t%n%h"
-              :displayer)
-             (function :tag "Function (FVALUE MAX-WIDTH TABLEN)"))
-            ((const
-              :format "%v "
-              :align)
-             (radio
-              :value "left"
-              (const "right")
-              (const "left")))
-            ((const
-              :format "%t%n%h"
-              :doc "Background color or face on the columns.
-    The most common use case here is to have alternating background colors on
-    the columns, so this would usually be a list of two colors."
-              :color)
-             (radio
-              color
-              face))))))
 
 (defcustom tsc-menu-project--arguments-props '(("--project" "-p"
                                                 "project"

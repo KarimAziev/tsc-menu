@@ -1,0 +1,61 @@
+#+OPTIONS: ^:nil tags:nil num:nil
+
+* About
+
+Transient-based interface for configuring TypeScript compiler (tsc) options and running the resulting command.
+
+* Table of Contents                                       :TOC_2_gh:QUOTE:
+#+BEGIN_QUOTE
+- [[#about][About]]
+- [[#requirements][Requirements]]
+- [[#installation][Installation]]
+  - [[#with-use-package-and-straightel][With use-package and straight.el]]
+  - [[#manual-installation][Manual installation]]
+- [[#usage][Usage]]
+#+END_QUOTE
+
+* Requirements
+
+| Name        | Version |
+|-------------+---------|
+| Emacs       |    29.1 |
+| ~transient~ |   0.5.3 |
+
+
+* Installation
+
+** With use-package and straight.el
+#+begin_src elisp :eval no
+(use-package tsc-menu
+  :straight (tsc-menu
+             :repo "KarimAziev/tsc-menu"
+             :type git
+             :host github))
+#+end_src
+
+** Manual installation
+
+Download the source code and put it wherever you like, e.g. into =~/.emacs.d/tsc-menu/=
+
+#+begin_src shell :eval no
+git clone https://github.com/KarimAziev/tsc-menu.git ~/.emacs.d/tsc-menu/
+#+end_src
+
+Add the downloaded directory to the load path:
+
+#+begin_src elisp :eval no
+(add-to-list 'load-path "~/.emacs.d/tsc-menu/")
+(require 'tsc-menu)
+#+end_src
+
+
+* Usage
+
+The primary entry point is the =tsc-menu= transient command.
+
+When executed, it presents a transient menu populated with TypeScript compiler arguments and options, from which users can select and configure accordingly. 
+
+Once the options are selected, the following actions are available:
+
+- =C-c C-a=: Preview the formatted =tsc= command with all selected arguments.
+- =RET=: Run the =tsc= command with the configured options in Emacs' compilation mode, allowing for on-the-fly edits and convenient output management.

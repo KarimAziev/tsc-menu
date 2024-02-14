@@ -26,8 +26,19 @@
 
 ;;; Commentary:
 
-;; Transient-based interface for configuring TypeScript compiler (tsc) options
-;; and running the resulting command.
+;; `tsc-menu' provides a transient interface for interacting with the TypeScript
+;; compiler (tsc).
+
+;; Usage:
+
+;; `M-x tsc-menu' - This will bring up the transient interface, where you can
+;; select compiler options and arguments. Once you have configured the command
+;; to your liking, you can execute it directly from the interface.
+
+;; The menu is dynamically generated from the output of `tsc --all`, ensuring
+;; that all available compiler options are presented to the user. Options are
+;; grouped logically, and the interface supports multi-value options, such as
+;; specifying multiple files.
 
 ;;; Code:
 
@@ -244,82 +255,6 @@ Argument LEN is an integer specifying the desired length of the key strategies."
                                              n)
                                             (reverse parts) "")))
                        (number-sequence 1 (min len parts-len)))))))))
-
-(defmacro tsc-menu--pipe (&rest functions)
-  "Return left-to-right composition from FUNCTIONS."
-  (declare (debug t)
-           (pure t)
-           (side-effect-free t))
-  `(lambda (&rest args)
-     ,@(let ((init-fn (pop functions)))
-        (list
-         (seq-reduce
-          (lambda (acc fn)
-            (if (symbolp fn)
-                `(funcall #',fn ,acc)
-              `(funcall ,fn ,acc)))
-          functions
-          (if (symbolp init-fn)
-              `(apply #',init-fn args)
-            `(apply ,init-fn args)))))))
-
-(defmacro tsc-menu--or (&rest functions)
-  "Return an unary function which invoke FUNCTIONS until first non-nil result."
-  (declare (debug t)
-           (pure t)
-           (side-effect-free t))
-  `(lambda (it)
-     (or
-      ,@(mapcar (lambda (v)
-                  (if (symbolp v)
-                      `(,v it)
-                    `(funcall ,v it)))
-         functions))))
-
-(defmacro tsc-menu--and (&rest functions)
-  "Return an unary function which invoke FUNCTIONS until first nil result."
-  (declare (debug t)
-           (pure t)
-           (side-effect-free t))
-  `(lambda (it)
-     (and
-      ,@(mapcar (lambda (v)
-                  (if (symbolp v)
-                      `(,v it)
-                    `(funcall ,v it)))
-         functions))))
-
-(defmacro tsc-menu--partial (fn &rest args)
-  "Return a partial application of FN to left-hand ARGS.
-
-ARGS is a list of the last N arguments to pass to FN. The result is a new
-function which does the same as FN, except that the last N arguments are fixed
-at the values with which this function was called."
-  (declare (side-effect-free t))
-  `(lambda (&rest pre-args)
-     ,(car (list (if (symbolp fn)
-                     `(apply #',fn (append (list ,@args) pre-args))
-                   `(apply ,fn (append (list ,@args) pre-args)))))))
-
-(defmacro tsc-menu--const (value)
-  "Return a function that always return VALUE.
-This function accepts any number of arguments but ignores them."
-  (declare (pure t)
-           (side-effect-free error-free))
-  (let ((arg (make-symbol "_")))
-    `(lambda (&rest ,arg) ,value)))
-
-(defmacro tsc-menu--rpartial (fn &rest args)
-  "Return a partial application of FN to right-hand ARGS.
-
-ARGS is a list of the last N arguments to pass to FN. The result is a new
-function which does the same as FN, except that the last N arguments are fixed
-at the values with which this function was called."
-  (declare (side-effect-free t))
-  `(lambda (&rest pre-args)
-     ,(car (list (if (symbolp fn)
-                     `(apply #',fn (append pre-args (list ,@args)))
-                   `(apply ,fn (append pre-args (list ,@args))))))))
 
 (defmacro tsc-menu--cond (&rest pairs)
   "Transform conditions into a lambda function.
@@ -670,12 +605,16 @@ Argument ARG-SPEC is an association list describing the argument specification."
   (interactive)
   (throw 'done nil))
 
-(defun tsc-menu--multi-file-reader (&rest _)
-  "Read multiple standard Keywords headers with INITIAL-VALUES."
+
+(defun tsc-menu-get-project-root ()
+  "Find the root directory of a TypeScript or JavaScript project."
+  (or (locate-dominating-file default-directory "tsconfig.json")
+      (locate-dominating-file default-directory "jsconfig.json")
+      (locate-dominating-file default-directory "package.json")))
+
+(defun tsc-menu--multi-file-reader (&optional prompt _initial-input _history)
+  "Read multiple standard Keywords headers with PROMPT."
   (let* ((choices)
-         (proj
-          (or (locate-dominating-file default-directory "tsconfig.json")
-              (locate-dominating-file default-directory "package.json")))
          (curr))
     (catch 'done
       (while (setq curr
@@ -685,20 +624,19 @@ Argument ARG-SPEC is an association list describing the argument specification."
                           (make-composed-keymap
                            tsc-menu--multi-completion-map
                            (current-local-map))))
-                     (file-relative-name
-                      (read-file-name
-                       (concat "File: \s" (substitute-command-keys
-                                           "(`\\<tsc-menu--multi-completion-map>\
+                     (read-file-name
+                      (concat
+                       (or prompt "File: \s") (substitute-command-keys
+                                               "(`\\<tsc-menu--multi-completion-map>\
 \\[tsc-throw-done]')\s")
-                               (if choices
-                                   (concat
-                                    "("
-                                    (string-join
-                                     choices
-                                     ", ")
-                                    ")")
-                                 "")))
-                      proj)))
+                       (if choices
+                           (concat
+                            "("
+                            (string-join
+                             choices
+                             ", ")
+                            ")")
+                         "")))))
         (setq choices (append choices (list curr)))))
     choices))
 
@@ -791,17 +729,7 @@ Argument ARGS is a list of arguments to be formatted."
                   (lambda ()
                     (interactive)
                     (let
-                        ((default-directory
-                          (expand-file-name
-                           (or
-                            (locate-dominating-file
-                             default-directory
-                             "tsconfig.json")
-                            (locate-dominating-file
-                             default-directory
-                             "package.json")
-                            default-directory)))
-                         (command (read-string "Run: "
+                        ((command (read-string "Run: "
                                    (string-trim
                                     (concat
                                      (executable-find "tsc")

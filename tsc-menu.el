@@ -1,4 +1,4 @@
-;;; tsc-menu.el --- Transient- interface for TypeScript compiler -*- lexical-binding: t; -*-
+;;; tsc-menu.el --- Transient interface for TypeScript compiler -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 Karim Aziiev <karim.aziiev@gmail.com>
 

@@ -1359,7 +1359,8 @@ for the TypeScript compiler."
   [[:setup-children
     (lambda (&rest _argsn)
       (mapcar
-       (apply-partially #'transient-parse-suffix transient--prefix)
+       (apply-partially #'transient-parse-suffix
+                        (oref transient--prefix command))
        (append (list '("--" "Files" tsc-menu--files)
                      '("." tsc-menu-toggle-options-view))
                (nth 0 (tsc-menu--get-options))
@@ -1375,13 +1376,13 @@ for the TypeScript compiler."
     (lambda (&rest _argsn)
       (mapcar
        (apply-partially #'transient-parse-suffix
-                        transient--prefix)
+                        (oref transient--prefix command))
        (nth 1 (tsc-menu--get-options))))]
    [:setup-children
     (lambda (&rest _argsn)
       (mapcar
        (apply-partially #'transient-parse-suffix
-                        transient--prefix)
+                        (oref transient--prefix command))
        (append (nth 2 (tsc-menu--get-options))
                (nth 3 (tsc-menu--get-options)))))]]
   (interactive)

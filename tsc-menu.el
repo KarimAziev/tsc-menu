@@ -89,7 +89,8 @@ option is presented in the transient interface and how user input is handled."
   :group 'tsc-menu)
 
 (defcustom tsc-menu-browser-args '("--lib" "esnext" "--lib" "dom" "--lib"
-                                   "dom.iterable")
+                                   "dom.iterable"
+                                   "--target" "esnext")
   "Arguments passed to TypeScript compiler for browser targets.
 
 A list of command-line arguments to pass to the TypeScript compiler when

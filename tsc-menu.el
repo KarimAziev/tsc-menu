@@ -1356,7 +1356,8 @@ for the TypeScript compiler."
 ;;;###autoload (autoload 'tsc-menu "tsc-menu" nil t)
 (transient-define-prefix tsc-menu ()
   "Transient menu for typescript commands."
-  [[:setup-children
+  [[:class transient-column
+    :setup-children
     (lambda (&rest _argsn)
       (mapcar
        (apply-partially #'transient-parse-suffix
@@ -1372,13 +1373,15 @@ for the TypeScript compiler."
                 '("C-c RET" "Showcase all modules" tsc-menu-showcase-modules)
                 '("C-c C-c" "Compile region" tsc-menu-compile-region)
                 '("RET" "Run" tsc-menu-compile)))))]
-   [:setup-children
+   [:class transient-column
+    :setup-children
     (lambda (&rest _argsn)
       (mapcar
        (apply-partially #'transient-parse-suffix
                         (oref transient--prefix command))
        (nth 1 (tsc-menu--get-options))))]
-   [:setup-children
+   [:class transient-column
+    :setup-children
     (lambda (&rest _argsn)
       (mapcar
        (apply-partially #'transient-parse-suffix

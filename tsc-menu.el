@@ -981,22 +981,27 @@ Argument ARGS is a list of arguments to be formatted."
                                            (shell-quote-argument
                                             temp-file))
                                      (mapcar #'string-trim tsc-args)))
-                   "\s")))
+                   "\s"))
+         (result))
     (when-let ((buff (get-file-buffer outfile)))
       (with-current-buffer buff
         (set-buffer-modified-p nil))
       (kill-buffer buff))
     (let ((inhibit-message nil))
-      (write-region code nil temp-file)
-      (with-temp-buffer
-        (shell-command command (current-buffer)
-                       (current-buffer))
-        (if (file-exists-p outfile)
-            (with-temp-buffer
-              (insert-file-contents outfile)
-              (buffer-string))
-          (minibuffer-message "An error: %s" (buffer-string))
-          nil)))))
+      (unwind-protect
+          (progn (write-region code nil temp-file)
+                 (with-temp-buffer
+                   (shell-command command (current-buffer)
+                                  (current-buffer))
+                   (if (file-exists-p outfile)
+                       (setq result (with-temp-buffer
+                                      (insert-file-contents outfile)
+                                      (buffer-string)))
+                     (minibuffer-message "An error: %s" (buffer-string))
+                     nil)))
+        (and (file-exists-p temp-file)
+             (delete-file temp-file))
+        result))))
 
 
 (defun tsc-menu--wrap-code (code &optional compile &rest args)

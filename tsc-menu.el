@@ -410,7 +410,7 @@ should bypass transformation; it defaults to nil."
                      (tsc-menu--compose
                        (tsc-menu--cond
                          [(lambda (it)
-                            (when-let ((res (and no-transform
+                            (when-let* ((res (and no-transform
                                                  (funcall
                                                   no-transform it))))
                               res))
@@ -711,7 +711,7 @@ VALUE), both of which are strings."
 
 (defun tsc-menu--parse-argument ()
   "Parse command-line arguments for a transient menu."
-  (when-let ((args-spec (tsc-menu--parse-arg)))
+  (when-let* ((args-spec (tsc-menu--parse-arg)))
     (let ((result)
           (descr (tsc-menu--parse-description))
           (meta))
@@ -728,7 +728,7 @@ VALUE), both of which are strings."
   "Parse arguments and return them as a reversed list."
   (let ((args))
     (while
-        (when-let ((arg (tsc-menu--parse-argument)))
+        (when-let* ((arg (tsc-menu--parse-argument)))
           (progn
             (skip-chars-forward "\n")
             (push arg args))))
@@ -796,7 +796,7 @@ VALUE), both of which are strings."
                  "^\\([-]\\{1,2\\}\\([^\s\n,]+\\)\\)\\(,[\s]\\([-]\\{1\\}\\([^\n]+\\)\\)\\)?"
                  nil t 1)
             (goto-char (match-beginning 0))
-            (when-let ((beg (save-excursion
+            (when-let* ((beg (save-excursion
                               (skip-chars-backward "\s\t\n")
                               (beginning-of-line)
                               (when (tsc-menu--parse-group-title)
@@ -908,7 +908,7 @@ itself."
 (cl-defmethod transient-format-value ((this tsc-menu-input-files))
   "Format THIS value for display and return the result."
   (let ((argument (oref this argument)))
-    (if-let ((value (oref this value)))
+    (if-let* ((value (oref this value)))
         (propertize
          (if (listp value)
              ;; Should be list of files.
@@ -938,7 +938,7 @@ itself."
            (setq transient-current-command (oref transient--prefix command))
            (setq transient-current-suffixes transient--suffixes)
            (setq raw-args (transient-args transient-current-command))))
-    (if-let ((files (seq-find (lambda (it)
+    (if-let* ((files (seq-find (lambda (it)
                                 (equal (car-safe it)
                                        "--files="))
                               raw-args)))
@@ -983,7 +983,7 @@ Argument ARGS is a list of arguments to be formatted."
                                      (mapcar #'string-trim tsc-args)))
                    "\s"))
          (result))
-    (when-let ((buff (get-file-buffer outfile)))
+    (when-let* ((buff (get-file-buffer outfile)))
       (with-current-buffer buff
         (set-buffer-modified-p nil))
       (kill-buffer buff))
@@ -1144,13 +1144,13 @@ PROGRAM."
            (with-current-buffer (process-buffer process)
              (ansi-color-apply-on-region (point-min)
                                          (point-max)))
-           (when-let ((buff (process-buffer process)))
+           (when-let* ((buff (process-buffer process)))
              (kill-buffer buff))
            (funcall callback)))))
     (set-process-filter
      proc
      (lambda (proc string)
-       (when-let ((buf (process-buffer proc)))
+       (when-let* ((buf (process-buffer proc)))
          (with-current-buffer buf
            (let ((inhibit-read-only t))
              (save-excursion
@@ -1169,7 +1169,7 @@ command."
   (interactive (list (tsc-menu-get-arguments)))
   (let* ((program (executable-find "tsc"))
          (files
-          (when-let ((arg (car-safe args)))
+          (when-let* ((arg (car-safe args)))
             (and (listp arg)
                  (seq-filter #'file-exists-p arg))))
          (filtered-args
@@ -1184,7 +1184,7 @@ command."
          (source-file (if region
                           (make-temp-file "script" nil ".ts" region)
                         (or
-                         (when-let ((file (seq-find
+                         (when-let* ((file (seq-find
                                            (lambda (it)
                                              (not (file-directory-p it)))
                                            files)))
